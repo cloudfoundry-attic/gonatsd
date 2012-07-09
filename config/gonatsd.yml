@@ -1,0 +1,6 @@
+---
+bind_address: 0.0.0.0:9000
+pprof:
+  bind_address: 0.0.0.0:10000
+varz:
+  bind_address: 0.0.0.0:11000

@@ -1,0 +1,2 @@
+- TLS support (crypto/tls is not compatible with SSLv2 handshake which is used in EM)
+- Cluster support
