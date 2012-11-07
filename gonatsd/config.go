@@ -3,10 +3,10 @@
 package gonatsd
 
 import (
-	log "github.com/cihub/seelog"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"launchpad.net/goyaml"
-	"os"
 	"time"
 )
 
@@ -59,39 +59,34 @@ type Config struct {
 	Limits      LimitsConfig  `yaml:"limits"`
 }
 
-// Parse the server configuration. Will exit if there was an error. 
-func ParseConfig(filename string) *Config {
+// Parse the server configuration. Will exit if there was an error.
+func ParseConfig(filename string) (*Config, error) {
 	contents, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Critical("Can't read configuration file: %s because: %s", filename, err.Error())
-		os.Exit(1)
+		return nil, fmt.Errorf("Can't read configuration file '%s': %s", filename, err.Error())
 	}
 
 	config := &Config{}
 	err = goyaml.Unmarshal(contents, &config)
 	if err != nil {
-		log.Critical("Can't parse configuration file: %s because: %s", filename, err.Error())
-		os.Exit(1)
+		return nil, fmt.Errorf("Can't parse configuration file '%s': %s", filename, err.Error())
 	}
 
 	if len(config.BindAddress) == 0 {
-		log.Critical("bind_address is required")
-		os.Exit(1)
+		return nil, errors.New("bind_address is required")
 	}
 
 	if len(config.Auth.Timeout) > 0 {
 		config.Auth.TimeoutDuration, err = time.ParseDuration(config.Auth.Timeout)
 		if err != nil {
-			log.Critical("Invalid auth timeout: %s because: %s", config.Auth.Timeout, err.Error())
-			os.Exit(1)
+			return nil, fmt.Errorf("Invalid auth timeout '%s': %s", config.Auth.Timeout, err.Error())
 		}
 	}
 
 	if len(config.Ping.Interval) > 0 {
 		config.Ping.IntervalDuration, err = time.ParseDuration(config.Ping.Interval)
 		if err != nil {
-			log.Critical("Invalid ping interval: %s because: %s", config.Ping.Interval, err.Error())
-			os.Exit(1)
+			return nil, fmt.Errorf("Invalid ping interval '%s': %s", config.Ping.Interval, err.Error())
 		}
 	}
 
@@ -107,5 +102,5 @@ func ParseConfig(filename string) *Config {
 		config.Limits.Pending = DEFAULT_MAX_PENDING
 	}
 
-	return config
+	return config, nil
 }

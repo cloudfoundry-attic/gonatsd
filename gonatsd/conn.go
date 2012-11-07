@@ -226,7 +226,7 @@ func (c *conn) SendServerCmd(r ServerCmd) {
 
 // Start implements the Conn Start method.
 func (c *conn) Start() {
-	log.Info("[client %s] connected", c.RemoteAddr())
+	log.Infof("[client %s] connected", c.RemoteAddr())
 	c.started = true
 	go c.writeLoop()
 	go c.readLoop()
@@ -273,7 +273,7 @@ func (c *conn) CloseWithError(err *NATSError) {
 			atomic.AddInt64(&c.server.Stats().errors, 1)
 		}
 
-		log.Warn("[client %s] error: %s", c.RemoteAddr(), err.Message)
+		log.Warnf("[client %s] error: %s", c.RemoteAddr(), err.Message)
 		c.fatalError <- err
 		c.Close()
 	}
@@ -326,7 +326,7 @@ func (c *conn) unregister() {
 }
 
 func (c *conn) dispatchLoop() {
-	defer log.Trace("[client %s] stopped dispatch loop", c.RemoteAddr())
+	defer log.Tracef("[client %s] stopped dispatch loop", c.RemoteAddr())
 
 	c.Write(INFO_REQUEST.Serve(c))
 
@@ -359,7 +359,7 @@ func (c *conn) readLoop() {
 		if err != nil {
 			switch err {
 			case io.EOF:
-				log.Info("[client %s] disconnected", c.RemoteAddr())
+				log.Infof("[client %s] disconnected", c.RemoteAddr())
 				c.commands <- CLOSE_CMD
 			case ErrProtocolOpTooBig:
 				c.inbox <- &BadRequest{ErrProtocolOpTooBig}
@@ -369,7 +369,7 @@ func (c *conn) readLoop() {
 			return
 		}
 
-		log.Trace("[client %s] %s", c.RemoteAddr(), line)
+		log.Tracef("[client %s] %s", c.RemoteAddr(), line)
 
 		fields := fieldsN(line, unicode.IsSpace, 2)
 		if len(fields) == 0 {

@@ -37,22 +37,22 @@ func (h *AuthHelper) Auth(req Request) (bool, *NATSError) {
 		case *ConnectRequest:
 			request := req.(*ConnectRequest)
 			if request.User == nil || request.Password == nil {
-				log.Trace("[client %s] did not send credentials", h.conn.RemoteAddr())
+				log.Tracef("[client %s] did not send credentials", h.conn.RemoteAddr())
 				return false, ErrAuthRequired
 			}
 
 			password, ok := h.users[*request.User]
 			if ok && password == *request.Password {
-				log.Trace("[client %s] authenticated with: %s", h.conn.RemoteAddr(), *request.User)
+				log.Tracef("[client %s] authenticated with: %s", h.conn.RemoteAddr(), *request.User)
 				h.authorized = true
 				h.Stop()
 				return true, nil
 			} else {
-				log.Trace("[client %s] sent wrong credentials", h.conn.RemoteAddr())
+				log.Tracef("[client %s] sent wrong credentials", h.conn.RemoteAddr())
 				return false, ErrAuthFailed
 			}
 		default:
-			log.Trace("[client %s] did not send credentials", h.conn.RemoteAddr())
+			log.Tracef("[client %s] did not send credentials", h.conn.RemoteAddr())
 			return false, ErrAuthRequired
 		}
 	}

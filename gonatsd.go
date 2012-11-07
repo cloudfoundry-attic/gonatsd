@@ -7,6 +7,7 @@ import (
 	log "github.com/cihub/seelog"
 	"gonatsd/gonatsd"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -19,7 +20,12 @@ func main() {
 
 	flag.Parse()
 
-	config := gonatsd.ParseConfig(*configFilename)
+	config, err := gonatsd.ParseConfig(*configFilename)
+	if err != nil {
+		log.Critical(err.Error())
+		os.Exit(1)
+	}
+
 	server := gonatsd.NewServer(config)
 	server.Start()
 }

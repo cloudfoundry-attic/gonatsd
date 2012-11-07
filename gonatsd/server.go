@@ -114,11 +114,11 @@ func (s *server) Start() {
 	s.exportVarz()
 
 	authRequired := len(s.config.Auth.Users) > 0
-	log.Info("Starting server on: %s [auth: %v] [users: %d]", s.config.BindAddress, authRequired,
+	log.Infof("Starting server on: %s [auth: %v] [users: %d]", s.config.BindAddress, authRequired,
 		len(s.config.Auth.Users))
 	ln, err := net.Listen("tcp", s.config.BindAddress)
 	if err != nil {
-		log.Critical("Could not listen: %s", err)
+		log.Criticalf("Could not listen: %s", err)
 		os.Exit(1)
 	}
 
@@ -134,7 +134,7 @@ func (s *server) Start() {
 	for {
 		nc, err := ln.Accept()
 		if err != nil {
-			log.Critical("Could not accept: %s", err)
+			log.Criticalf("Could not accept: %s", err)
 			os.Exit(1)
 		}
 		go s.processConn(nc)
@@ -160,11 +160,11 @@ func (s *server) exportPprof() {
 		mux.Handle("/debug/pprof/cmdline", http.HandlerFunc(httppprof.Cmdline))
 		mux.Handle("/debug/pprof/profile", http.HandlerFunc(httppprof.Profile))
 		mux.Handle("/debug/pprof/symbol", http.HandlerFunc(httppprof.Symbol))
-		log.Info("Starting pprof server on: %s", s.config.Profile.BindAddress)
+		log.Infof("Starting pprof server on: %s", s.config.Profile.BindAddress)
 		go func() {
 			err := http.ListenAndServe(s.config.Profile.BindAddress, mux)
 			if err != nil {
-				log.Critical("Could not listen: %s", err)
+				log.Criticalf("Could not listen: %s", err)
 				os.Exit(1)
 			}
 		}()
@@ -178,11 +178,11 @@ func (s *server) exportVarz() {
 			s.varzHandler(w, r)
 		}
 		mux.Handle("/varz", NewBasicAuthHandler(s.config.Varz.Users, varzHandler))
-		log.Info("Starting /varz endpoint on: %s", s.config.Varz.BindAddress)
+		log.Infof("Starting /varz endpoint on: %s", s.config.Varz.BindAddress)
 		go func() {
 			err := http.ListenAndServe(s.config.Varz.BindAddress, mux)
 			if err != nil {
-				log.Critical("Could not listen: %s", err)
+				log.Criticalf("Could not listen: %s", err)
 				os.Exit(1)
 			}
 		}()

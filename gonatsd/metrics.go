@@ -144,7 +144,7 @@ func (r *Registry) NewRates(name string, addr *int64, durations ...string) {
 		if err == nil {
 			r.NewRate(fmt.Sprintf("%s.%s", name, duration), addr, d)
 		} else {
-			log.Warn("Invalid rate interval, ignoring: %s %s", name, duration)
+			log.Warnf("Invalid rate interval, ignoring: %s %s", name, duration)
 		}
 	}
 }

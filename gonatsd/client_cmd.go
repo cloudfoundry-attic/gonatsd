@@ -6,7 +6,7 @@ import (
 	log "github.com/cihub/seelog"
 )
 
-// Simple interface for commands that need to be handled by the 
+// Simple interface for commands that need to be handled by the
 // client dispatch loop.
 type ClientCmd interface {
 
@@ -30,7 +30,7 @@ type ErrorCmd struct {
 func (c *ErrorCmd) Process(conn Conn) {
 	err := c.Error
 	if !conn.Closed() {
-		log.Warn("[client %s]: error: %s", conn.RemoteAddr(), err)
+		log.Warnf("[client %s]: error: %s", conn.RemoteAddr(), err)
 		conn.Close()
 	}
 }
