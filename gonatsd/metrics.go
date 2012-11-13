@@ -4,7 +4,6 @@ package gonatsd
 
 import (
 	"fmt"
-	log "github.com/cihub/seelog"
 	"strconv"
 	"sync"
 	"time"
@@ -144,7 +143,7 @@ func (r *Registry) NewRates(name string, addr *int64, durations ...string) {
 		if err == nil {
 			r.NewRate(fmt.Sprintf("%s.%s", name, duration), addr, d)
 		} else {
-			log.Warnf("Invalid rate interval, ignoring: %s %s", name, duration)
+			Log.Warnf("Invalid rate interval, ignoring: %s %s", name, duration)
 		}
 	}
 }

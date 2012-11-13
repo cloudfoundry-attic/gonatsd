@@ -59,17 +59,17 @@ type Config struct {
 	Limits      LimitsConfig  `yaml:"limits"`
 }
 
-// Parse the server configuration. Will exit if there was an error.
+// Parse the server configuration.
 func ParseConfig(filename string) (*Config, error) {
 	contents, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("Can't read configuration file '%s': %s", filename, err.Error())
+		return nil, err
 	}
 
 	config := &Config{}
 	err = goyaml.Unmarshal(contents, &config)
 	if err != nil {
-		return nil, fmt.Errorf("Can't parse configuration file '%s': %s", filename, err.Error())
+		return nil, fmt.Errorf("can't parse '%s': %s", filename, err.Error())
 	}
 
 	if len(config.BindAddress) == 0 {
@@ -79,14 +79,14 @@ func ParseConfig(filename string) (*Config, error) {
 	if len(config.Auth.Timeout) > 0 {
 		config.Auth.TimeoutDuration, err = time.ParseDuration(config.Auth.Timeout)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid auth timeout '%s': %s", config.Auth.Timeout, err.Error())
+			return nil, fmt.Errorf("invalid auth timeout '%s': %s", config.Auth.Timeout, err.Error())
 		}
 	}
 
 	if len(config.Ping.Interval) > 0 {
 		config.Ping.IntervalDuration, err = time.ParseDuration(config.Ping.Interval)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid ping interval '%s': %s", config.Ping.Interval, err.Error())
+			return nil, fmt.Errorf("invalid ping interval '%s': %s", config.Ping.Interval, err.Error())
 		}
 	}
 

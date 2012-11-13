@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	log "github.com/cihub/seelog"
 	"net"
 	"net/http"
 	httppprof "net/http/pprof"
@@ -79,14 +78,19 @@ type server struct {
 	stats         *Stats
 }
 
-func NewServer(config *Config) Server {
+func NewServer(config *Config) (Server, error) {
 	s := new(server)
 	s.commands = make(chan ServerCmd, DEFAULT_SERVER_BACKLOG)
 	s.config = config
 	s.stats = NewStats()
 	s.subscriptions = NewTrie(".")
-	s.initLogger()
-	return s
+
+	err := s.initLogger()
+	if err != nil {
+		return nil, err
+	}
+
+	return s, nil
 }
 
 func (s *server) Config() *Config {
@@ -114,11 +118,11 @@ func (s *server) Start() {
 	s.exportVarz()
 
 	authRequired := len(s.config.Auth.Users) > 0
-	log.Infof("Starting server on: %s [auth: %v] [users: %d]", s.config.BindAddress, authRequired,
+	Log.Infof("Starting server on: %s [auth: %v] [users: %d]", s.config.BindAddress, authRequired,
 		len(s.config.Auth.Users))
 	ln, err := net.Listen("tcp", s.config.BindAddress)
 	if err != nil {
-		log.Criticalf("Could not listen: %s", err)
+		Log.Fatalf("Could not listen: %s", err)
 		os.Exit(1)
 	}
 
@@ -134,7 +138,7 @@ func (s *server) Start() {
 	for {
 		nc, err := ln.Accept()
 		if err != nil {
-			log.Criticalf("Could not accept: %s", err)
+			Log.Fatalf("Could not accept: %s", err)
 			os.Exit(1)
 		}
 		go s.processConn(nc)
@@ -160,11 +164,11 @@ func (s *server) exportPprof() {
 		mux.Handle("/debug/pprof/cmdline", http.HandlerFunc(httppprof.Cmdline))
 		mux.Handle("/debug/pprof/profile", http.HandlerFunc(httppprof.Profile))
 		mux.Handle("/debug/pprof/symbol", http.HandlerFunc(httppprof.Symbol))
-		log.Infof("Starting pprof server on: %s", s.config.Profile.BindAddress)
+		Log.Infof("Starting pprof server on: %s", s.config.Profile.BindAddress)
 		go func() {
 			err := http.ListenAndServe(s.config.Profile.BindAddress, mux)
 			if err != nil {
-				log.Criticalf("Could not listen: %s", err)
+				Log.Fatalf("Could not listen: %s", err)
 				os.Exit(1)
 			}
 		}()
@@ -178,11 +182,11 @@ func (s *server) exportVarz() {
 			s.varzHandler(w, r)
 		}
 		mux.Handle("/varz", NewBasicAuthHandler(s.config.Varz.Users, varzHandler))
-		log.Infof("Starting /varz endpoint on: %s", s.config.Varz.BindAddress)
+		Log.Infof("Starting /varz endpoint on: %s", s.config.Varz.BindAddress)
 		go func() {
 			err := http.ListenAndServe(s.config.Varz.BindAddress, mux)
 			if err != nil {
-				log.Criticalf("Could not listen: %s", err)
+				Log.Fatalf("Could not listen: %s", err)
 				os.Exit(1)
 			}
 		}()
@@ -208,35 +212,23 @@ func (s *server) processConn(nc net.Conn) {
 	atomic.AddInt64(&s.connections, -1)
 }
 
-func (s *server) initLogger() {
+func (s *server) initLogger() (err error) {
 	logOut := os.Stdout
-	var err error
+
 	if len(s.config.Log.Out) > 0 {
 		logOut, err = os.OpenFile(s.config.Log.Out, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Couldn't open log file: %s for writing: %s",
-				s.config.Log.Out, err.Error())
-			os.Exit(1)
+			return err
 		}
 	}
 
-	logLevel := log.LogLevel(log.InfoLvl)
-	var ok bool
-	if len(s.config.Log.MinLevel) > 0 {
-		logLevel, ok = log.LogLevelFromString(s.config.Log.MinLevel)
-		if !ok {
-			fmt.Fprintf(os.Stderr, "Invalid log level: %s", s.config.Log.MinLevel)
-			os.Exit(1)
-		}
-	}
-
-	logger, err := log.LoggerFromWriterWithMinLevel(logOut, logLevel)
+	logger, err := NewLogger(logOut, s.config.Log.MinLevel)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Could not create logger: %s", err.Error())
-		os.Exit(1)
+		return err
 	}
 
-	log.ReplaceLogger(logger)
+	ReplaceLogger(logger)
+	return nil
 }
 
 func (s *server) bindMetrics() {

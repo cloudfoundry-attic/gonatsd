@@ -3,7 +3,6 @@
 package gonatsd
 
 import (
-	log "github.com/cihub/seelog"
 	"time"
 )
 
@@ -37,22 +36,22 @@ func (h *AuthHelper) Auth(req Request) (bool, *NATSError) {
 		case *ConnectRequest:
 			request := req.(*ConnectRequest)
 			if request.User == nil || request.Password == nil {
-				log.Tracef("[client %s] did not send credentials", h.conn.RemoteAddr())
+				Log.Debugf("[client %s] did not send credentials", h.conn.RemoteAddr())
 				return false, ErrAuthRequired
 			}
 
 			password, ok := h.users[*request.User]
 			if ok && password == *request.Password {
-				log.Tracef("[client %s] authenticated with: %s", h.conn.RemoteAddr(), *request.User)
+				Log.Debugf("[client %s] authenticated with: %s", h.conn.RemoteAddr(), *request.User)
 				h.authorized = true
 				h.Stop()
 				return true, nil
 			} else {
-				log.Tracef("[client %s] sent wrong credentials", h.conn.RemoteAddr())
+				Log.Debugf("[client %s] sent wrong credentials", h.conn.RemoteAddr())
 				return false, ErrAuthFailed
 			}
 		default:
-			log.Tracef("[client %s] did not send credentials", h.conn.RemoteAddr())
+			Log.Debugf("[client %s] did not send credentials", h.conn.RemoteAddr())
 			return false, ErrAuthRequired
 		}
 	}

@@ -4,7 +4,7 @@ package main
 
 import (
 	"flag"
-	log "github.com/cihub/seelog"
+	"fmt"
 	"gonatsd/gonatsd"
 	"math/rand"
 	"os"
@@ -14,18 +14,21 @@ import (
 var configFilename = flag.String("config", "", "path to gonatsd config file")
 
 func main() {
-	defer log.Flush()
-
 	rand.Seed(time.Now().UnixNano())
 
 	flag.Parse()
 
 	config, err := gonatsd.ParseConfig(*configFilename)
 	if err != nil {
-		log.Critical(err.Error())
+		fmt.Fprintf(os.Stderr, "Invalid config: %s\n", err.Error())
 		os.Exit(1)
 	}
 
-	server := gonatsd.NewServer(config)
+	server, err := gonatsd.NewServer(config)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to start server: %s\n", err.Error())
+		os.Exit(1)
+	}
+
 	server.Start()
 }

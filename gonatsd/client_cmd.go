@@ -2,14 +2,9 @@
 
 package gonatsd
 
-import (
-	log "github.com/cihub/seelog"
-)
-
 // Simple interface for commands that need to be handled by the
 // client dispatch loop.
 type ClientCmd interface {
-
 	// Process the command in context of the client dispatch loop.
 	Process(Conn)
 }
@@ -30,7 +25,7 @@ type ErrorCmd struct {
 func (c *ErrorCmd) Process(conn Conn) {
 	err := c.Error
 	if !conn.Closed() {
-		log.Warnf("[client %s]: error: %s", conn.RemoteAddr(), err)
+		Log.Warnf("[client %s]: error: %s", conn.RemoteAddr(), err)
 		conn.Close()
 	}
 }
