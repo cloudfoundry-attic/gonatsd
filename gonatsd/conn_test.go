@@ -79,7 +79,11 @@ func (s *ConnSuite) TearDownTest(c *C) {
 				}
 			}()
 
-			s.conn.Close()
+			// Instead of just closing connection we schedule a CLOSE_CMD
+			// in order to let dispatch loop read it, otherwise there is
+			// a possible race condition: dispatch loop might kick in after
+			// teardown closes the connection.
+			s.conn.ServeCommand(CLOSE_CMD)
 		}
 	}
 }
