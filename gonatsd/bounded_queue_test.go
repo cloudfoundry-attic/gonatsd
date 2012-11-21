@@ -4,8 +4,12 @@ package gonatsd
 
 import (
 	. "launchpad.net/gocheck"
+	"testing"
 	"time"
 )
+
+// Glue from gocheck to testing
+func Test(t *testing.T) { TestingT(t) }
 
 type BoundedQueueSuite struct{}
 
