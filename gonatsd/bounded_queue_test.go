@@ -4,6 +4,7 @@ package gonatsd
 
 import (
 	. "launchpad.net/gocheck"
+	"testing"
 	"time"
 )
 
@@ -14,6 +15,9 @@ var _ = Suite(&BoundedQueueSuite{})
 type DummySizedObject struct {
 	size int32
 }
+
+// 'go test' only runs tests on packages that have exported tests
+func TestDiscoverGoCheck(*testing.T) {}
 
 func (o *DummySizedObject) Size() int32 {
 	return o.size
