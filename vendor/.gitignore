@@ -1,0 +1,7 @@
+pkg
+.git
+.gitignore
+.hg
+.hgignore
+.bzr
+.bzrignore
