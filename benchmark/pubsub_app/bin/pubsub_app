@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+# Copyright (c) 2009-2012 VMware, Inc.
+
+ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../../Gemfile", __FILE__)
+
+require "optparse"
+require "rubygems"
+require "bundler/setup"
+
+$:.unshift(File.expand_path("../../lib", __FILE__))
+
+require "pubsub_app"
+
+config_file = nil
+
+opts = OptionParser.new do |opts|
+  opts.on("-c", "--config [FILE]", "configuration file") do |file|
+    config_file = file
+  end
+end
+
+opts.parse!(ARGV.dup)
+
+unless config_file && File.exists?(config_file)
+  puts(opts)
+  exit(1)
+end
+
+PubsubApp::Runner.run(config_file)
