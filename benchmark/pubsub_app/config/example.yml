@@ -1,0 +1,19 @@
+---
+nats_uri: nats://localhost:9000
+
+pubs:
+- subject: test.me
+  payload: [normal, 100, 10]
+  interval: [random, 1, 10]
+
+- subject: foo.bar
+  payload: [random, 10000, 100000]
+  interval: [normal, 100, 10]
+
+- subject: "foo.{guid}"
+  payload: [normal, 3000, 500]
+  interval: [random, 1, 10]
+
+subs:
+- subject: ">"
+
