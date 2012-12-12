@@ -194,11 +194,8 @@ func (s *server) exportVarz() {
 }
 
 func (s *server) loop() {
-	for {
-		select {
-		case r := <-s.commands:
-			r.Process(s)
-		}
+	for r := range s.commands {
+		r.Process(s)
 	}
 }
 
