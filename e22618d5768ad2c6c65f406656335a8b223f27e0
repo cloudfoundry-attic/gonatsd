@@ -1,0 +1,7 @@
+Code-Review+2: Vadim Spivak <vspivak@vmware.com>
+Verified+1: CI Master <cf-ci@rbcon.com>
+Submitted-by: Oleg Shaldybin <olegs@vmware.com>
+Submitted-at: Fri, 04 Jan 2013 17:51:13 +0000
+Reviewed-on: http://reviews.cloudfoundry.org/12358
+Project: gonatsd
+Branch: refs/heads/master
